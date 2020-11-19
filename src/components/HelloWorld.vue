@@ -1,60 +1,171 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <v-container>
+    <v-row class="text-center">
+      <v-col cols="12">
+        <v-img
+          :src="require('../assets/logo.svg')"
+          class="my-3"
+          contain
+          height="200"
+        />
+      </v-col>
+
+      <v-data-table
+          :headers="headers"
+          :items="users"
+          :items-per-page="5"
+          class="elevation-1"
+      >
+        <template v-slot:item="{item}">
+          <tr>
+            <td>{{item.name}}</td>
+            <td>{{item.lastnameFather}}</td>
+            <td>{{item.lastnameMother}}</td>
+            <td>{{item.email}}</td>
+            <td>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn color="primary" icon @click="dialog = true" v-on="on">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                </template>
+                <span>Editar</span>
+              </v-tooltip>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+    </v-row>
+
+    <template>
+      <v-row justify="center">
+        <v-dialog
+            v-model="dialog"
+            persistent
+            max-width="600px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+                color="primary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+            >
+              Open Dialog
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="headline">User Profile</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                        label="Legal first name*"
+                        required
+                        v-model="userSelected.name"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="4"
+                  >
+                    <v-text-field
+                        label="Legal middle name"
+                        hint="example of helper text only on focus"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="6"
+                      md="4"
+                  >
+                    <v-text-field
+                        label="Legal last name*"
+                        hint="example of persistent helper text"
+                        persistent-hint
+                        required
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                        label="Email*"
+                        required
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+              <small>*indicates required field</small>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="dialog = false"
+              >
+                Close
+              </v-btn>
+              <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="saveUSer"
+              >
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-row>
+    </template>
+
+
+  </v-container>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-
+import Vue from "vue";
+import { Component } from "vue-property-decorator";
+import { userService } from "@/services/user.service";
+import { UserInterface } from "@/types/User.interface";
 @Component
-export default class HelloWorld extends Vue {
-  @Prop() private msg!: string;
-}
+export default class App extends Vue {
+  public name: string = "HelloWorld";
+  public users: any = [];
+  public dialog: boolean = false;
+  public userSelected: UserInterface = {
+    id: 0,
+    name: '',
+    lastnameFather: '',
+    lastnameMother: '',
+    email: '',
+    password: ''
+  };
+  public headers: any = [
+    { text: "Nombre", value: "name" },
+    { text: "Apellido Paterno", value: "lastnameFather" },
+    { text: "Apellido Materno", value: "lastnameMother" },
+    { text: "Email", value: "email" },
+    { text: "Acciones", value: "" },
+  ];
+  async mounted() {
+    this.users = await userService.getUsuarios();
+    console.log(this.users);
+  }
+  public openModal() {
+    this.dialog = true;
+  }
+  public async userEdit(user: UserInterface) {
+    console.log(user);
+    this.userSelected = user;
+    const updateUser = await userService.updateUsuarios(user);
+    console.log('Update from server ', updateUser);
+  }
+  public saveUSer(){
+    console.log('User to save ', this.userSelected);
+  }
+};
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
