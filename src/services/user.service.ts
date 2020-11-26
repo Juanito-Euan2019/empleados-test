@@ -10,8 +10,18 @@ class UserService {
 
   public async updateUsuarios(user: UserInterface) {
     return await axios
-        .patch<UserInterface[]>(`http://localhost:3001/users/${user.id}`, user)
+        .put<UserInterface[]>(`http://localhost:3001/users/${user.id}`, user)
         .then(response => response.data);
+  }
+  public async agregarUsuarios(user: UserInterface){
+    return await axios
+        .post<UserInterface[]>(`http://localhost:3001/users/${this.agregarUsuarios}`)
+        .then(response => response.data);
+  }
+  public async deleteUsuarios(id: number){
+    return await axios
+        .delete(`http://localhost:3001/users/${id}`)
+        .then(response => response.data );
   }
 
 }
